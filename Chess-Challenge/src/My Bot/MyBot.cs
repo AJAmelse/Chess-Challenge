@@ -18,6 +18,7 @@ public class MyBot : IChessBot
             
             Piece capturedPiece = board.GetPiece(move.TargetSquare);
             int capturedPieceValue = pieceValues[(int)capturedPiece.PieceType];
+            Square square = move.TargetSquare;
 
             int moveEval = capturedPieceValue;
 
@@ -32,10 +33,17 @@ public class MyBot : IChessBot
                     break;
                 }
 
+            if (PieceIsAttacked(board, move, square)){
+                moveEval -= pieceValues[(int)move.MovePieceType];
+
+            }
+
             if (moveEval > HighestEval){
                 moveToPlay = move;
                 moveEval = HighestEval;
+                
             }
+            Console.WriteLine(moveEval);
 
 
                 
@@ -62,10 +70,17 @@ public class MyBot : IChessBot
 
         static bool PieceIsAttacked(Board board, Move move, Square square){
             board.MakeMove(move);
-            bool IsAttacked = board.SquareIsAttackedByOpponent(Square )
+            bool IsAttacked = board.SquareIsAttackedByOpponent(square);
+            board.UndoMove(move);
+            return IsAttacked;
 
         }
-        
+
+        /*static bool MoveIsPromotion(Board board, Move move){
+            board.MakeMove(move);
+            bool IsPromotion = 
+        }
+        */
 
     }
 }
