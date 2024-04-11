@@ -1,5 +1,6 @@
 ﻿using ChessChallenge.API;
 using System;
+using System.Diagnostics;
 
 public class MyBot : IChessBot
 {
@@ -22,21 +23,7 @@ public class MyBot : IChessBot
 
             int moveEval = capturedPieceValue;
 
-            if(MoveIsCheck(board, move)){
-                moveEval = checkValue + moveEval;
-            }
 
-
-            if (MoveIsCheckmate(board, move))
-                {
-                    moveToPlay = move;
-                    break;
-                }
-
-            if (PieceIsAttacked(board, move, square)){
-                moveEval -= pieceValues[(int)move.MovePieceType];
-
-            }
 
             if (moveEval > HighestEval){
                 moveToPlay = move;
@@ -53,28 +40,27 @@ public class MyBot : IChessBot
 
         return moveToPlay;
 
-        static bool MoveIsCheckmate(Board board, Move move)
-        {
+        int Eval(Board board, Move move, Square square){
+            int eval = -200000;
             board.MakeMove(move);
             bool isMate = board.IsInCheckmate();
-            board.UndoMove(move);
-            return isMate;
-        }
-
-        static bool MoveIsCheck(Board board, Move move){
-            board.MakeMove(move);
             bool isCheck = board.IsInCheck();
-            board.UndoMove(move);
-            return isCheck;
+            bool isAttacked = board.SquareIsAttackedByOpponent(square);
+            
+            if (isMate){
+                eval = eval += 1000000;
+            }
+            if (isCheck){
+                eval = eval -= 70;
+            }
+            if (isAttacked){
+                eval = eval -= pieceValues[(int)move.MovePieceType];
+            }
+            
+            return eval;
         }
 
-        static bool PieceIsAttacked(Board board, Move move, Square square){
-            board.MakeMove(move);
-            bool IsAttacked = board.SquareIsAttackedByOpponent(square);
-            board.UndoMove(move);
-            return IsAttacked;
 
-        }
 
         /*static bool MoveIsPromotion(Board board, Move move){
             board.MakeMove(move);
