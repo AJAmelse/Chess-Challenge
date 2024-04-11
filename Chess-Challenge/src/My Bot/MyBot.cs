@@ -9,10 +9,9 @@ public class MyBot : IChessBot
     {
         Move[] allMoves = board.GetLegalMoves();
         Move rBestMove = default;
+        int score = -2000000;
 
-    var (killers, allocatedTime, i, score, depth) = (new Move[256], timer.MillisecondsRemaining / 8, 0, 0, 1);
-
-    Move Negamax(int Depth)
+    int Negamax(int Depth)
         {
             if (Depth == 0){
                 rBestMove = allMoves[1];
@@ -21,7 +20,7 @@ public class MyBot : IChessBot
 
             int max = -2000000000;
             foreach(Move move in allMoves){
-                
+                rBestMove
             }
         }
 
