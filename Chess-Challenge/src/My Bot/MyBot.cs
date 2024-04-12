@@ -13,15 +13,13 @@ public class MyBot : IChessBot
 
         Random rng = new();
             Move moveToPlay = allMoves[rng.Next(allMoves.Length)];
-            int HighestEval = 0;
+        int HighestEval = 0;
 
         foreach(Move move in allMoves){
             
-            Piece capturedPiece = board.GetPiece(move.TargetSquare);
-            int capturedPieceValue = pieceValues[(int)capturedPiece.PieceType];
             Square square = move.TargetSquare;
 
-            int moveEval = capturedPieceValue;
+            int moveEval = Eval(board, move, square);
 
 
 
@@ -30,7 +28,6 @@ public class MyBot : IChessBot
                 moveEval = HighestEval;
                 
             }
-            Console.WriteLine(moveEval);
 
 
                 
@@ -41,22 +38,28 @@ public class MyBot : IChessBot
         return moveToPlay;
 
         int Eval(Board board, Move move, Square square){
-            int eval = -200000;
+            int eval = default;
+            Piece capturedPiece = board.GetPiece(move.TargetSquare);
             board.MakeMove(move);
             bool isMate = board.IsInCheckmate();
             bool isCheck = board.IsInCheck();
             bool isAttacked = board.SquareIsAttackedByOpponent(square);
-            
+            int captureValue = pieceValues[(int)capturedPiece.PieceType];
+
+            if (captureValue >= 0){
+                eval = eval + captureValue;
+            }
             if (isMate){
                 eval = eval += 1000000;
             }
             if (isCheck){
-                eval = eval -= 70;
+                eval = eval -= 50;
             }
             if (isAttacked){
                 eval = eval -= pieceValues[(int)move.MovePieceType];
             }
-            
+            board.UndoMove(move);
+            Console.WriteLine(eval);
             return eval;
         }
 
