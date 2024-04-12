@@ -1,5 +1,6 @@
 ﻿using ChessChallenge.API;
 using System;
+using System.Diagnostics;
 
 public class MyBot : IChessBot
 {
@@ -12,38 +13,21 @@ public class MyBot : IChessBot
 
         Random rng = new();
             Move moveToPlay = allMoves[rng.Next(allMoves.Length)];
-            int HighestEval = 0;
+        int HighestEval = 0;
 
         foreach(Move move in allMoves){
             
-            Piece capturedPiece = board.GetPiece(move.TargetSquare);
-            int capturedPieceValue = pieceValues[(int)capturedPiece.PieceType];
             Square square = move.TargetSquare;
 
-            int moveEval = capturedPieceValue;
-
-            if(MoveIsCheck(board, move)){
-                moveEval = checkValue + moveEval;
-            }
+            int moveEval = Eval(board, move, square);
 
 
-            if (MoveIsCheckmate(board, move))
-                {
-                    moveToPlay = move;
-                    break;
-                }
-
-            if (PieceIsAttacked(board, move, square)){
-                moveEval -= pieceValues[(int)move.MovePieceType];
-
-            }
 
             if (moveEval > HighestEval){
                 moveToPlay = move;
                 moveEval = HighestEval;
                 
             }
-            Console.WriteLine(moveEval);
 
 
                 
@@ -53,28 +37,33 @@ public class MyBot : IChessBot
 
         return moveToPlay;
 
-        static bool MoveIsCheckmate(Board board, Move move)
-        {
+        int Eval(Board board, Move move, Square square){
+            int eval = default;
+            Piece capturedPiece = board.GetPiece(move.TargetSquare);
             board.MakeMove(move);
             bool isMate = board.IsInCheckmate();
-            board.UndoMove(move);
-            return isMate;
-        }
-
-        static bool MoveIsCheck(Board board, Move move){
-            board.MakeMove(move);
             bool isCheck = board.IsInCheck();
+            bool isAttacked = board.SquareIsAttackedByOpponent(square);
+            int captureValue = pieceValues[(int)capturedPiece.PieceType];
+
+            if (captureValue >= 0){
+                eval = eval + captureValue;
+            }
+            if (isMate){
+                eval = eval += 1000000;
+            }
+            if (isCheck){
+                eval = eval -= 50;
+            }
+            if (isAttacked){
+                eval = eval -= pieceValues[(int)move.MovePieceType];
+            }
             board.UndoMove(move);
-            return isCheck;
+            Console.WriteLine(eval);
+            return eval;
         }
 
-        static bool PieceIsAttacked(Board board, Move move, Square square){
-            board.MakeMove(move);
-            bool IsAttacked = board.SquareIsAttackedByOpponent(square);
-            board.UndoMove(move);
-            return IsAttacked;
 
-        }
 
         /*static bool MoveIsPromotion(Board board, Move move){
             board.MakeMove(move);
