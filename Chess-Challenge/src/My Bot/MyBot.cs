@@ -21,6 +21,18 @@ public class MyBot : IChessBot
 
             int moveEval = Eval(board, move, square);
 
+            int Negamax(int Depth)
+        {
+            if (Depth == 0){
+                return Eval(board, move, square);
+            } 
+
+            int max = -2000000000;
+            foreach(Move move in allMoves){
+                rBestMove
+            }
+        }
+
 
 
             if (moveEval > HighestEval){
