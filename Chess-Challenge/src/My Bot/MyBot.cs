@@ -13,7 +13,6 @@ public class MyBot : IChessBot
 
         Random rng = new();
             Move moveToPlay = allMoves[rng.Next(allMoves.Length)];
-        int HighestEval = 0;
 
         foreach(Move move in allMoves){
             
@@ -29,17 +28,16 @@ public class MyBot : IChessBot
 
             int max = -2000000000;
             foreach(Move move in allMoves){
-                rBestMove
+                board.MakeMove(move);
+                int eval = -Negamax(Depth - 1);
+                if(eval>max){
+                    max = eval;
+                }
+                board.UndoMove(move);
             }
+
+            return max;
         }
-
-
-
-            if (moveEval > HighestEval){
-                moveToPlay = move;
-                moveEval = HighestEval;
-                
-            }
 
 
                 
