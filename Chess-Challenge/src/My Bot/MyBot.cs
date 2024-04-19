@@ -18,12 +18,12 @@ public class MyBot : IChessBot
             
             Square square = move.TargetSquare;
 
-            int moveEval = Eval(board, move, square);
+            int moveEval = Eval(board);
 
             int Negamax(int Depth)
         {
             if (Depth == 0){
-                return Eval(board, move, square);
+                return Eval(board);
             } 
 
             int max = -2000000000;
@@ -47,28 +47,24 @@ public class MyBot : IChessBot
 
         return moveToPlay;
 
-        int Eval(Board board, Move move, Square square){
+        int Eval(Board board){
             int eval = default;
-            Piece capturedPiece = board.GetPiece(move.TargetSquare);
-            board.MakeMove(move);
+            
+            PieceList[] pieces = board.GetAllPieceLists();
+            int whitePawns = pieces[0].Count;
+            Console.WriteLine(whitePawns);
             bool isMate = board.IsInCheckmate();
             bool isCheck = board.IsInCheck();
-            bool isAttacked = board.SquareIsAttackedByOpponent(square);
-            int captureValue = pieceValues[(int)capturedPiece.PieceType];
 
-            if (captureValue >= 0){
-                eval = eval + captureValue;
-            }
+ 
             if (isMate){
                 eval = eval += 1000000;
             }
             if (isCheck){
                 eval = eval -= 50;
             }
-            if (isAttacked){
-                eval = eval -= pieceValues[(int)move.MovePieceType];
-            }
-            board.UndoMove(move);
+
+            
             Console.WriteLine(eval);
             return eval;
         }
