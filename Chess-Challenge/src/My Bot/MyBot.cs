@@ -51,10 +51,33 @@ public class MyBot : IChessBot
             int eval = default;
             
             PieceList[] pieces = board.GetAllPieceLists();
-            int whitePawns = pieces[0].Count;
+            int whitePawns = pieces[0].Count * pieceValues[1];
             Console.WriteLine(whitePawns);
+            int whiteKnights = pieces[1].Count * pieceValues[2];
+            Console.WriteLine(whiteKnights);
+            int whiteBishops = pieces[2].Count * pieceValues[3];
+            Console.WriteLine(whiteBishops);
+            int whiteRooks = pieces[3].Count * pieceValues[4];
+            Console.WriteLine(whiteRooks);
+            int whiteQueens = pieces[4].Count * pieceValues[5];
+            Console.WriteLine(whiteQueens);
+            int blackPawns = pieces[6].Count * pieceValues[1];
+            Console.WriteLine(blackPawns);
+            int blackKnights = pieces[7].Count * pieceValues[2];
+            Console.WriteLine(blackKnights);
+            int blackBishops = pieces[8].Count * pieceValues[3];
+            Console.WriteLine(blackBishops);
+            int blackRooks = pieces[9].Count * pieceValues[4];
+            Console.WriteLine(blackRooks);
+            int blackQueens = pieces[10].Count * pieceValues[5];
+            Console.WriteLine(blackQueens);
+            
+            int whitePieceValue = whitePawns + whiteKnights + whiteBishops + whiteRooks + whiteQueens;
+            int blackPieceValue = blackPawns + blackKnights + blackBishops + blackRooks + blackQueens; 
+
             bool isMate = board.IsInCheckmate();
             bool isCheck = board.IsInCheck();
+            eval = eval + whitePieceValue - blackPieceValue;
 
  
             if (isMate){
