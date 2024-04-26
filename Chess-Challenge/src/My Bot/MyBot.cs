@@ -8,19 +8,20 @@ public class MyBot : IChessBot
     readonly int[] pieceValues = { 0, 100, 300, 300, 500, 900, 10000 };
     readonly int checkValue = 50;
 
-    private const int MaxDepth = 3;
+    private const int MaxDepth = 6;
     public Move Think(Board board, Timer timer)
     {
         Move[] allMoves = board.GetLegalMoves();
 
-
-
         bool playerColor = board.IsWhiteToMove;
+
+        Move moveToPlay = rootNegamax();
 
 
         Move rootNegamax(){
             Move bestMove = default;
             int bestScore = int.MinValue;
+            Move[] allMoves = board.GetLegalMoves();
 
             foreach(Move move in allMoves){
                 board.MakeMove(move);
@@ -48,6 +49,7 @@ public class MyBot : IChessBot
             } 
 
             int bestScore = int.MinValue;
+            Move[] allMoves = board.GetLegalMoves();
 
             foreach(Move move in allMoves){
                 board.MakeMove(move);
@@ -73,25 +75,16 @@ public class MyBot : IChessBot
             
             PieceList[] pieces = board.GetAllPieceLists();
             int whitePawns = pieces[0].Count * pieceValues[1];
-            Console.WriteLine(whitePawns);
             int whiteKnights = pieces[1].Count * pieceValues[2];
-            Console.WriteLine(whiteKnights);
             int whiteBishops = pieces[2].Count * pieceValues[3];
-            Console.WriteLine(whiteBishops);
             int whiteRooks = pieces[3].Count * pieceValues[4];
-            Console.WriteLine(whiteRooks);
             int whiteQueens = pieces[4].Count * pieceValues[5];
-            Console.WriteLine(whiteQueens);
             int blackPawns = pieces[6].Count * pieceValues[1];
-            Console.WriteLine(blackPawns);
             int blackKnights = pieces[7].Count * pieceValues[2];
-            Console.WriteLine(blackKnights);
             int blackBishops = pieces[8].Count * pieceValues[3];
-            Console.WriteLine(blackBishops);
             int blackRooks = pieces[9].Count * pieceValues[4];
-            Console.WriteLine(blackRooks);
             int blackQueens = pieces[10].Count * pieceValues[5];
-            Console.WriteLine(blackQueens);
+ 
             
             int whitePieceValue = whitePawns + whiteKnights + whiteBishops + whiteRooks + whiteQueens;
             int blackPieceValue = blackPawns + blackKnights + blackBishops + blackRooks + blackQueens; 
@@ -100,20 +93,12 @@ public class MyBot : IChessBot
             bool isCheck = board.IsInCheck();
             eval = eval + whitePieceValue - blackPieceValue;
 
- 
-            if (isMate){
-                eval = eval += 1000000;
-            }
-            if (isCheck){
-                eval = eval -= 50;
-            }
 
-            
-            Console.WriteLine(eval);
+        
             return eval;
         }
 
-        Move moveToPlay = rootNegamax();
+        
 
       return moveToPlay;
 
