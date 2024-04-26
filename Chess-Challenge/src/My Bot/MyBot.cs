@@ -7,45 +7,66 @@ public class MyBot : IChessBot
     
     readonly int[] pieceValues = { 0, 100, 300, 300, 500, 900, 10000 };
     readonly int checkValue = 50;
+
+    private const int MaxDepth = 3;
     public Move Think(Board board, Timer timer)
     {
         Move[] allMoves = board.GetLegalMoves();
 
-        Random rng = new();
-            Move moveToPlay = allMoves[rng.Next(allMoves.Length)];
 
-        foreach(Move move in allMoves){
-            
-            Square square = move.TargetSquare;
 
-            int moveEval = Eval(board);
+        bool playerColor = board.IsWhiteToMove;
 
-            int Negamax(int Depth)
-        {
-            if (Depth == 0){
-                return Eval(board);
-            } 
 
-            int max = -2000000000;
+        Move rootNegamax(){
+            Move bestMove = default;
+            int bestScore = int.MinValue;
+
             foreach(Move move in allMoves){
                 board.MakeMove(move);
-                int eval = -Negamax(Depth - 1);
-                if(eval>max){
-                    max = eval;
-                }
+                int score = -Negamax(MaxDepth - 1, int.MinValue, int.MaxValue, playerColor);
                 board.UndoMove(move);
-            }
 
-            return max;
+                if (score > bestScore){
+                    bestScore = score;
+                    bestMove = move;
+                }
+            }
+            return bestMove;
+
         }
 
+        int Negamax(int Depth, int alpha, int beta, bool color)
+        {
+            if (Depth == 0 || board.IsDraw()|| board.IsInCheckmate()){
+                if(color){
+                return Eval(board);
+                }
+                else{
+                    return -Eval(board);
+                }
+            } 
+
+            int bestScore = int.MinValue;
+
+            foreach(Move move in allMoves){
+                board.MakeMove(move);
+                int score = -Negamax(Depth - 1, -alpha, -beta, color);
+                board.UndoMove(move);
+                
+                bestScore = Math.Max(bestScore, score);
+
+                alpha = Math.Max(alpha, score);
+                if (alpha >= beta){
+                    break;
+                }
 
                 
+            }
+
+            return bestScore;
         }
 
-    
-
-        return moveToPlay;
 
         int Eval(Board board){
             int eval = default;
@@ -92,13 +113,9 @@ public class MyBot : IChessBot
             return eval;
         }
 
+        Move moveToPlay = rootNegamax();
 
-
-        /*static bool MoveIsPromotion(Board board, Move move){
-            board.MakeMove(move);
-            bool IsPromotion = 
-        }
-        */
+      return moveToPlay;
 
     }
 }
