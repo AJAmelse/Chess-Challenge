@@ -8,23 +8,14 @@ public class MyBot : IChessBot
     readonly int[] pieceValues = { 0, 100, 300, 300, 500, 900, 10000 };
     readonly int checkValue = 50;
 
-    private const int MaxDepth = 2;
+    private const int MaxDepth = 6;
     public Move Think(Board board, Timer timer)
     {
         Move[] allMoves = board.GetLegalMoves();
 
-        bool playerColor = board.IsWhiteToMove;
+        
         Move moveToPlay = rootNegamax();
         
-        void makeMoveAndSwap(Move move){
-            board.MakeMove(move);
-            playerColor = !playerColor;
-        }
-
-        void undoMoveAndSwap(Move move){
-            board.UndoMove(move);
-            playerColor = !playerColor;
-        }
 
         Move rootNegamax(){
             Move bestMove = default;
@@ -32,9 +23,10 @@ public class MyBot : IChessBot
             Move[] allMoves = board.GetLegalMoves();
 
             foreach(Move move in allMoves){
-                makeMoveAndSwap(move);              
-                int score = -Negamax(MaxDepth - 1, int.MinValue, int.MaxValue, playerColor);
-                undoMoveAndSwap(move);
+                board.MakeMove(move);    
+                bool playerColor = board.IsWhiteToMove;          
+                int score = -Negamax(MaxDepth - 1, int.MinValue, int.MaxValue);
+                board.UndoMove(move);
 
                 if (score > bestScore){
                     bestScore = score;
@@ -45,15 +37,12 @@ public class MyBot : IChessBot
 
         }
 
-        int Negamax(int Depth, int alpha, int beta, bool color)
+        int Negamax(int Depth, int alpha, int beta)
         {
             if (Depth == 0 || board.IsDraw()|| board.IsInCheckmate()){
-                if(color){
-                return Eval(board, color);
-                }
-                else{
-                    return -Eval(board, color);
-                }
+                
+                return Eval(board);
+                
             } 
 
             int bestScore = int.MinValue;
@@ -61,26 +50,25 @@ public class MyBot : IChessBot
 
             foreach(Move move in allMoves){
                 board.MakeMove(move);
-                int score = -Negamax(Depth - 1, -alpha, -beta, !color);
+                int score = -Negamax(Depth - 1, -alpha, -beta);
                 board.UndoMove(move);
                 
                 bestScore = Math.Max(bestScore, score);
 
                 alpha = Math.Max(alpha, score);
                 if (alpha >= beta){
-                    break;
+                    return Eval(board);
                 }
 
                 
             }
-
+            Console.WriteLine(bestScore);
             return bestScore;
         }
 
 
-        int Eval(Board board, bool color){
+        int Eval(Board board){
             int eval = default;
-            Console.WriteLine(color);
             
             PieceList[] pieces = board.GetAllPieceLists();
             int whitePawns = pieces[0].Count * pieceValues[1];
@@ -102,21 +90,30 @@ public class MyBot : IChessBot
 
             bool isMate = board.IsInCheckmate();
             bool isCheck = board.IsInCheck();
-            eval = eval + whitePieceValue - blackPieceValue;
-            if(color){
-                if(isMate){
-                    eval -= 100000000;
-                }
-                if(isCheck){
-                    eval += 50;
-                }
-            }
-            if(!color){
+            bool isDraw = board.IsDraw();
+            
+            if(board.IsWhiteToMove){
+                eval += whitePieceValue - blackPieceValue;
                 if(isMate){
                     eval += 100000000;
                 }
                 if(isCheck){
+                    eval += 50;
+                }
+                if(isDraw){
+                    eval -= 300;
+                }
+            }
+            if(!board.IsWhiteToMove){
+                eval += blackPieceValue - whitePieceValue;
+                if(isMate){
+                    eval -= 100000000;
+                }
+                if(isCheck){
                     eval -= 50;
+                }
+                if (isDraw){
+                    eval += 300;
                 }
             }
 
