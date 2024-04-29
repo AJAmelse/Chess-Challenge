@@ -7,69 +7,123 @@ public class MyBot : IChessBot
     
     readonly int[] pieceValues = { 0, 100, 300, 300, 500, 900, 10000 };
     readonly int checkValue = 50;
+
+    private const int MaxDepth = 6;
     public Move Think(Board board, Timer timer)
     {
         Move[] allMoves = board.GetLegalMoves();
 
-        Random rng = new();
-            Move moveToPlay = allMoves[rng.Next(allMoves.Length)];
-        int HighestEval = 0;
+        
+        Move moveToPlay = rootNegamax();
+        
 
-        foreach(Move move in allMoves){
-            
-            Square square = move.TargetSquare;
+        Move rootNegamax(){
+            Move bestMove = default;
+            int bestScore = int.MinValue;
+            Move[] allMoves = board.GetLegalMoves();
 
-            int moveEval = Eval(board, move, square);
+            foreach(Move move in allMoves){
+                board.MakeMove(move);    
+                bool playerColor = board.IsWhiteToMove;          
+                int score = -Negamax(MaxDepth - 1, int.MinValue, int.MaxValue);
+                board.UndoMove(move);
 
-
-
-            if (moveEval > HighestEval){
-                moveToPlay = move;
-                moveEval = HighestEval;
-                
+                if (score > bestScore){
+                    bestScore = score;
+                    bestMove = move;
+                }
             }
+            return bestMove;
 
-
-                
         }
 
-    
+        int Negamax(int Depth, int alpha, int beta)
+        {
+            if (Depth == 0 || board.IsDraw()|| board.IsInCheckmate()){
+                
+                return Eval(board);
+                
+            } 
 
-        return moveToPlay;
+            int bestScore = int.MinValue;
+            Move[] allMoves = board.GetLegalMoves();
 
-        int Eval(Board board, Move move, Square square){
+            foreach(Move move in allMoves){
+                board.MakeMove(move);
+                int score = -Negamax(Depth - 1, -alpha, -beta);
+                board.UndoMove(move);
+                
+                bestScore = Math.Max(bestScore, score);
+
+                alpha = Math.Max(alpha, score);
+                if (alpha >= beta){
+                    return Eval(board);
+                }
+
+                
+            }
+            Console.WriteLine(bestScore);
+            return bestScore;
+        }
+
+
+        int Eval(Board board){
             int eval = default;
-            Piece capturedPiece = board.GetPiece(move.TargetSquare);
-            board.MakeMove(move);
+            
+            PieceList[] pieces = board.GetAllPieceLists();
+            int whitePawns = pieces[0].Count * pieceValues[1];
+            int whiteKnights = pieces[1].Count * pieceValues[2];
+            int whiteBishops = pieces[2].Count * pieceValues[3];
+            int whiteRooks = pieces[3].Count * pieceValues[4];
+            int whiteQueens = pieces[4].Count * pieceValues[5];
+            int whiteKings = pieces[5].Count * pieceValues[6];
+            int blackPawns = pieces[6].Count * pieceValues[1];
+            int blackKnights = pieces[7].Count * pieceValues[2];
+            int blackBishops = pieces[8].Count * pieceValues[3];
+            int blackRooks = pieces[9].Count * pieceValues[4];
+            int blackQueens = pieces[10].Count * pieceValues[5];
+            int blackKings = pieces[11].Count * pieceValues[6];
+ 
+            
+            int whitePieceValue = whitePawns + whiteKnights + whiteBishops + whiteRooks + whiteQueens;
+            int blackPieceValue = blackPawns + blackKnights + blackBishops + blackRooks + blackQueens; 
+
             bool isMate = board.IsInCheckmate();
             bool isCheck = board.IsInCheck();
-            bool isAttacked = board.SquareIsAttackedByOpponent(square);
-            int captureValue = pieceValues[(int)capturedPiece.PieceType];
+            bool isDraw = board.IsDraw();
+            
+            if(board.IsWhiteToMove){
+                eval += whitePieceValue - blackPieceValue;
+                if(isMate){
+                    eval += 100000000;
+                }
+                if(isCheck){
+                    eval += 50;
+                }
+                if(isDraw){
+                    eval -= 300;
+                }
+            }
+            if(!board.IsWhiteToMove){
+                eval += blackPieceValue - whitePieceValue;
+                if(isMate){
+                    eval -= 100000000;
+                }
+                if(isCheck){
+                    eval -= 50;
+                }
+                if (isDraw){
+                    eval += 300;
+                }
+            }
 
-            if (captureValue >= 0){
-                eval = eval + captureValue;
-            }
-            if (isMate){
-                eval = eval += 1000000;
-            }
-            if (isCheck){
-                eval = eval -= 50;
-            }
-            if (isAttacked){
-                eval = eval -= pieceValues[(int)move.MovePieceType];
-            }
-            board.UndoMove(move);
-            Console.WriteLine(eval);
+        
             return eval;
         }
 
+        
 
-
-        /*static bool MoveIsPromotion(Board board, Move move){
-            board.MakeMove(move);
-            bool IsPromotion = 
-        }
-        */
+      return moveToPlay;
 
     }
 }
